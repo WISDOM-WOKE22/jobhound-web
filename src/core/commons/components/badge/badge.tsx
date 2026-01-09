@@ -83,6 +83,12 @@ export const getStatusBadge = (status: string) => {
           Interviewing
         </span>
       );
+    case 'under_review':
+      return (
+        <span className={`${baseClass} bg-green-500/10 text-green-700 dark:text-green-400 border border-green-500/20`}>
+          Under Review
+        </span>
+      );
     case 'writing':
       return (
         <span className={`${baseClass} bg-purple-200 text-purple-800`}>
