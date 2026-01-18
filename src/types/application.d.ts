@@ -34,10 +34,20 @@ export interface IApplicationType {
     updatedAt: Date
 }
 
-export interface ApplicationResponseType {
-    data: ApplicationType[];
-    message: string;
+export interface PaginationType {
     total: number;
-    page: number;
     limit: number;
+    offset: number;
+    currentPage: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+}
+
+export interface ApplicationResponseType {
+    data: {
+        applications: ApplicationType[];
+        pagination: PaginationType;
+    }
+    message?: string;
 }

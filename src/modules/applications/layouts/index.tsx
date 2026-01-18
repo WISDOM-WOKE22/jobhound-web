@@ -28,8 +28,9 @@ import { useRouter } from "next/navigation";
 import { getStatusBadge } from "@/core/commons/components/badge/badge";
 import { Button } from "@/components/ui/button";
 import { Preloader } from "../components/preloader";
+import moment from "moment";
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 10;
 
 // Empty State Component - defined outside component
 function EmptyState() {
@@ -105,10 +106,17 @@ export function ApplicationsLayout() {
         ...(debouncedSearch && { company: debouncedSearch }),
     };
     
-    const { data, isLoading, total } = useApplicationsService(queryParams);
+    const { data, isLoading, pagination } = useApplicationsService(queryParams);
     
-    // Calculate pagination info
-    const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+    // Extract pagination info from response
+    const { 
+        total, 
+        totalPages, 
+        hasNextPage, 
+        hasPreviousPage 
+    } = pagination;
+    
+    // Calculate display items
     const startItem = total === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1;
     const endItem = Math.min(currentPage * ITEMS_PER_PAGE, total);
     
@@ -119,8 +127,13 @@ export function ApplicationsLayout() {
         }
     }, [totalPages]);
     
-    const goToPreviousPage = () => goToPage(currentPage - 1);
-    const goToNextPage = () => goToPage(currentPage + 1);
+    const goToPreviousPage = () => {
+        if (hasPreviousPage) goToPage(currentPage - 1);
+    };
+    
+    const goToNextPage = () => {
+        if (hasNextPage) goToPage(currentPage + 1);
+    };
     
     // Generate page numbers to display
     const getPageNumbers = () => {
@@ -153,20 +166,6 @@ export function ApplicationsLayout() {
 
     const getCompanyInitial = (companyName: string) => {
         return companyName.charAt(0).toUpperCase();
-    };
-
-    const formatDate = (dateString?: string) => {
-        if (!dateString) return "N/A";
-        try {
-            const date = new Date(dateString);
-            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const month = months[date.getMonth()];
-            const day = date.getDate();
-            const year = date.getFullYear();
-            return `${month} ${day}, ${year}`;
-        } catch {
-            return dateString;
-        }
     };
     
     const clearSearch = () => {
@@ -294,7 +293,7 @@ export function ApplicationsLayout() {
                                                         </TableCell>
                                                         <TableCell className="px-6 py-4">
                                                             <span className="text-muted-foreground">
-                                                                {formatDate(application.updatedAt)}
+                                                                {moment(application.updatedAt).startOf("hour").fromNow() || "No date set"}
                                                             </span>
                                                         </TableCell>
                                                         <TableCell className="px-6 py-4 text-right">
@@ -324,7 +323,7 @@ export function ApplicationsLayout() {
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={goToPreviousPage}
-                                                disabled={currentPage === 1}
+                                                disabled={!hasPreviousPage}
                                                 className="h-8 w-8 p-0"
                                             >
                                                 <ChevronLeft className="h-4 w-4" />
@@ -350,7 +349,7 @@ export function ApplicationsLayout() {
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={goToNextPage}
-                                                disabled={currentPage === totalPages}
+                                                disabled={!hasNextPage}
                                                 className="h-8 w-8 p-0"
                                             >
                                                 <ChevronRight className="h-4 w-4" />
