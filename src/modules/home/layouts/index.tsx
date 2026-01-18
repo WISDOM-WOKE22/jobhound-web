@@ -334,7 +334,7 @@ export function HomeLayout() {
                             </CardHeader>
                             <CardContent>
                                 <div className="flex flex-wrap gap-4">
-                                    {data?.appliedCompanies.map((company, index) => (
+                                    {data?.appliedCompanies.slice(0, 10).map((company, index) => (
                                         <div 
                                             key={index} 
                                             className="flex flex-col items-center justify-center gap-2 group"
