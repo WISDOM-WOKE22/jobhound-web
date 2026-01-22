@@ -1,0 +1,329 @@
+@import "katex/dist/katex.min.css";
+
+.tiptap {
+  min-height: 320px;
+  outline: none;
+  /* caret-color: hsl(var(--primary)); */
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  box-sizing: border-box;
+}
+
+.tiptap p {
+  margin: 0 0 0.8em;
+  line-height: 1.6;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+.tiptap .tippy-content {
+  background-color: none;
+}
+
+.tiptap ul,
+.tiptap ol {
+  margin: 0.6em 0 0.6em 0;
+  padding-left: 1.5rem;
+}
+
+.tiptap pre {
+  font-family:
+    ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  white-space: pre-wrap;
+}
+
+.tiptap blockquote {
+  border-left: 3px solid hsl(var(--border));
+  margin: 0.4em 0;
+  padding-left: 1rem;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+
+.tiptap code {
+  border-radius: 6px;
+  background: hsl(var(--muted));
+  padding: 0.15rem 0.4rem;
+  font-size: 0.9em;
+}
+
+.tiptap a {
+  /* color: hsl(var(--primary));s */
+  text-decoration: underline;
+  /* text-decoration-color: hsl(var(--primary) / 0.4); */
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.notion-task-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.notion-task-list .task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.notion-task-list .task-item > label {
+  margin-top: 0.25rem;
+}
+
+.tippy-box[data-theme~="slash-menu"] {
+  background-color: transparent;
+}
+
+.tippy-box[data-animation="scale-subtle"][data-state="hidden"] {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.tippy-box[data-animation="scale-subtle"][data-state="visible"] {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    transform 120ms ease,
+    opacity 120ms ease;
+}
+
+.editor-preview {
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  background: transparent;
+}
+
+.editor-preview .tiptap {
+  min-height: 0;
+}
+
+.editor-image {
+  position: relative;
+  width: 100%;
+}
+
+.editor-image-node[data-align="left"] figure {
+  margin-right: auto;
+}
+
+.editor-image-node[data-align="center"] figure {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.editor-image-node[data-align="right"] figure {
+  margin-left: auto;
+}
+
+.editor-image-node figure {
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.editor-image-node img {
+  border-radius: 1rem;
+}
+
+.editor-image-node[data-width] figure {
+  max-width: 100%;
+}
+
+.editor-image-node figcaption {
+  color: hsl(var(--muted-foreground));
+}
+
+.block-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  pointer-events: auto;
+  background-color: hsla(var(--background), 0.92);
+  border: 1px solid hsl(var(--border));
+  padding: 0.35rem;
+  border-radius: 9999px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+}
+
+.block-control-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  color: hsl(var(--muted-foreground));
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.block-control-button:hover {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+  border-color: hsl(var(--accent));
+}
+
+.block-control-button:active {
+  transform: scale(0.96);
+}
+
+.block-control-button[draggable="true"] {
+  cursor: grab;
+}
+
+.block-control-button[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.block-control-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tiptap-block-node.has-block-controls {
+  outline: 1px solid hsl(var(--primary) / 0.35);
+  outline-offset: 6px;
+  transition: outline-color 0.15s ease;
+}
+
+.tiptap .bubble-menu {
+  background-color: transparent;
+}
+
+.proseMirror {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.proseMirror .tippy-content {
+  background-color: none;
+}
+.tiptap .tippy-content {
+  background-color: none;
+}
+
+/* Math rendering styles - ensure math stays within editor width */
+.tiptap [data-type="inline-math"] {
+  display: inline;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  vertical-align: baseline;
+  word-break: break-word;
+  line-height: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+.tiptap [data-type="inline-math"] .katex {
+  display: inline;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  font-size: 1em;
+  line-height: inherit;
+  vertical-align: baseline;
+  text-align: left;
+  margin: 0;
+  padding: 0;
+}
+
+.tiptap [data-type="inline-math"] .katex-display {
+  display: inline !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: inherit !important;
+  vertical-align: baseline !important;
+}
+
+.tiptap [data-type="inline-math"] .katex .katex-html {
+  line-height: inherit;
+  display: inline;
+}
+
+.tiptap [data-type="inline-math"] .katex .base {
+  display: inline;
+  vertical-align: baseline;
+  margin: 0;
+  padding: 0;
+}
+
+.tiptap [data-type="block-math"] {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 1em 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  text-align: center;
+  padding: 0.5em 0;
+}
+
+.tiptap [data-type="block-math"] .katex {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  margin: 0 auto;
+}
+
+.tiptap [data-type="block-math"] .katex-display {
+  display: block !important;
+  margin: 0.5em 0 !important;
+  overflow-x: auto;
+  overflow-y: visible;
+  text-align: center;
+  width: 100%;
+}
+
+/* Ensure KaTeX doesn't break layout */
+.tiptap .katex {
+  font-size: 1em;
+}
+
+/* Inline KaTeX should match text line-height */
+.tiptap p .katex,
+.tiptap span .katex {
+  line-height: inherit;
+  vertical-align: baseline;
+}
+
+.tiptap .katex * {
+  box-sizing: border-box;
+}
+
+/* Prevent math from causing horizontal scroll */
+.tiptap {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  .tiptap [data-type="inline-math"] {
+    font-size: 0.9em;
+    max-width: 100%;
+  }
+  
+  .tiptap [data-type="block-math"] {
+    margin: 0.8em 0;
+    padding: 0.4em 0;
+  }
+  
+  .tiptap [data-type="block-math"] .katex {
+    font-size: 0.95em;
+  }
+  
+  .tiptap [data-type="block-math"] .katex-display {
+    font-size: 0.95em !important;
+  }
+}

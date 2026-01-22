@@ -12,6 +12,7 @@ import { useApplicationsService } from "../../services";
 import { SingleApplicationTimelineType } from "@/types";
 import { useEffect } from "react";
 import { useMainStore } from "@/lib/zustand/store";
+import RichTextEditorPreview from "@/core/richTextEditorPreview";
 interface ViewEmailModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -35,11 +36,11 @@ export function ViewEmailModal({ open, onOpenChange, email }: ViewEmailModalProp
     };
 
     // Email body content
-    const emailBody = emailContent?.body || "";
+    const emailBody = emailContent?.htmlBody || "";
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0 rounded-2xl">
+            <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0 rounded-2xl">
                 {/* Header */}
                 <DialogHeader className="px-8 pt-8 pb-6 border-b border-border/40">
                     <div className="flex items-start gap-5">
@@ -129,7 +130,8 @@ export function ViewEmailModal({ open, onOpenChange, email }: ViewEmailModalProp
                             {/* Email Body */}
                             <div className="pt-6 border-t border-border/30">
                                 <div className="text-base text-foreground/90 leading-relaxed whitespace-pre-wrap">
-                                    {emailBody || email.snippet || "No content available"}
+                                    <RichTextEditorPreview content={emailBody || email.snippet || "No content available"} />
+                                    {/* {emailBody || email.snippet || "No content available"} */}
                                 </div>
                             </div>
                         </>
