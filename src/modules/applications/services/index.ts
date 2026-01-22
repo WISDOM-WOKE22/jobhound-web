@@ -20,6 +20,8 @@ export const useApplicationsService = (queryParams?: ApplicationQueryParams) => 
     const [serverError, setServerError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [application, setApplication] = useState<IApplicationType | null>(null);
+    const [ singleApplicationLoading, setSingleApplicationLoading] = useState(false);
+    const [ singleApplication, setSingleApplication] = useState<IApplicationType | null>(null);
     const queryString = toQueryString(queryParams || {});
 
     const { data, isLoading, error, mutate } = useSWR<ApplicationResponseType>(
@@ -43,6 +45,25 @@ export const useApplicationsService = (queryParams?: ApplicationQueryParams) => 
         }
     }
 
+    const getSingleApplication = async (id: string) => {
+        try {
+            setSingleApplicationLoading(true);
+            const response = await api.get(`/applications/${id}`);
+            if (response.status === 200) {
+                setSingleApplication(response.data.data.application);
+            }
+            setSingleApplicationLoading(false);
+        }
+        catch (error: any) {
+            setSingleApplicationLoading(false)
+            toast.error(error.message);
+            setServerError(error.response.data.message);
+        } finally {
+            setSingleApplicationLoading(false);
+        }
+    }
+
+
     return {
         getApplications,
         isLoading,
@@ -63,5 +84,8 @@ export const useApplicationsService = (queryParams?: ApplicationQueryParams) => 
         mutate,
         serverError,
         application,
+        singleApplication,
+        singleApplicationLoading,
+        getSingleApplication,
     }
 }

@@ -212,10 +212,6 @@ export function ApplicationsLayout() {
                                         className="pl-9 h-9 w-[200px] sm:w-[240px]"
                                     />
                                 </div>
-                                <Button size="sm" className="h-9">
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Add New
-                                </Button>
                             </div>
                         </div>
                     </CardHeader>
@@ -264,7 +260,7 @@ export function ApplicationsLayout() {
                                                         key={application.id}
                                                         className="group hover:bg-muted/40 transition-all duration-200 cursor-pointer border-b border-border/30 animate-in fade-in slide-in-from-left-2"
                                                         style={{ animationDelay: `${index * 30}ms` }}
-                                                        onClick={() => router.push(`/applications/${application.id}`)}
+                                                        onClick={() => router.push(`/applications/${application._id}`)}
                                                     >
                                                         <TableCell className="px-6 py-4">
                                                             <div className="flex items-center gap-4">

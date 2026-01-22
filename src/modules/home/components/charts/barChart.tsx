@@ -181,7 +181,7 @@ export function StatsChart({
               />
               <Area
                 dataKey='totalApplications'
-                type='monotone'
+                type='natural'
                 fill='url(#fillTotalApplications)'
                 stroke={chartColor}
                 strokeWidth={2.5}

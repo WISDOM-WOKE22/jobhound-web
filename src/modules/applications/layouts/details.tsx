@@ -1,10 +1,9 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/core/commons/layouts/dashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ViewEmailModal } from "@/modules/applications/components/modals/viewEmail";
 import {
     ChevronLeft,
@@ -15,8 +14,14 @@ import {
     User,
     Sparkles,
     Globe,
+    ArrowLeft,
 } from "lucide-react";
 import { ApplicationStatus } from "@/types";
+import { useApplicationsService } from "../services";
+import { ApplicationDetailsPreloader } from "../components/preloader/details";
+import { getStatusBadge } from "@/core/commons/components/badge/badge";
+import moment from "moment";
+import { getCompanyInitial, getEmailInitial } from "@/utils";
 
 // Types for timeline events and email updates
 interface TimelineEvent {
@@ -52,7 +57,7 @@ interface ApplicationDetails {
 }
     
 export function ApplicationDetailsLayout() {
-    const params = useParams();
+    const { id } = useParams<{ id: string }>();
     const router = useRouter();
     const [selectedEmail, setSelectedEmail] = useState<{
         from: string;
@@ -62,10 +67,17 @@ export function ApplicationDetailsLayout() {
         body?: string;
     } | null>(null);
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+    const { getSingleApplication, singleApplicationLoading, singleApplication } = useApplicationsService()
+
+    useEffect(() => {
+        if (id) {
+            getSingleApplication(id);
+        }
+    }, [id]);
 
     // Mock data - in production, fetch based on params.id
     const application: ApplicationDetails = {
-        id: params?.id as string || "1",
+        id: id || "1",
         jobTitle: "Senior Frontend Engineer",
         company: "Stripe",
         status: "interviewing",
@@ -132,32 +144,6 @@ export function ApplicationDetailsLayout() {
         }
     };
 
-    const getStatusBadge = (status: ApplicationStatus) => {
-        const statusConfig = {
-            interviewing: {
-                className: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20",
-                label: "Interview Scheduled",
-            },
-            applied: {
-                className: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
-                label: "Applied",
-            },
-            rejected: {
-                className: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20",
-                label: "Rejected",
-            },
-            offer: {
-                className: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20",
-                label: "Offer",
-            },
-            pending: {
-                className: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20",
-                label: "Pending",
-            },
-        };
-        return statusConfig[status] || statusConfig.pending;
-    };
-
     const getSourceIcon = (source: string) => {
         switch (source) {
             case "email":
@@ -169,31 +155,32 @@ export function ApplicationDetailsLayout() {
         }
     };
 
-    const formatDate = (dateString: string) => {
-        try {
-            const date = new Date(dateString);
-            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const month = months[date.getMonth()];
-            const day = date.getDate();
-            const year = date.getFullYear();
-            return `${month} ${day.toString().padStart(2, '0')}, ${year}`;
-        } catch {
-            return dateString;
-        }
-    };
+    // Loading State - Skeleton Loader
+    if (singleApplicationLoading) {
+        return (
+            <ApplicationDetailsPreloader/>
+        );
+    }
 
-    const getCompanyInitial = (company: string) => {
-        return company.charAt(0).toUpperCase();
-    };
-
-    const getEmailInitial = (email: string) => {
-        return email.charAt(0).toUpperCase();
-    };
-
-    const statusConfig = getStatusBadge(application.status);
+    if (!singleApplication) {
+        return (
+            <DashboardLayout pageTitle="Application Not Found" subHeading="Application Not Found">
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex flex-col items-center justify-center h-full">
+                        <p className="text-2xl font-semibold text-foreground">Application Not Found</p>
+                        <p className="text-sm text-muted-foreground">The application you are looking for does not exist.</p>
+                        <Button onClick={() => router.push("/applications")} className="mt-4">
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Back to applications
+                        </Button>
+                    </div>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     return (
-        <DashboardLayout pageTitle={application.jobTitle} subHeading={application.company}>
+        <DashboardLayout pageTitle={singleApplication.jobTitle} subHeading={singleApplication.companyName}>
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Back Navigation - Minimal */}
                 <button
@@ -209,16 +196,16 @@ export function ApplicationDetailsLayout() {
                     <div className="flex items-start gap-5">
                         <div className="shrink-0 w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
                             <span className="text-2xl font-semibold text-primary">
-                                {getCompanyInitial(application.company)}
+                                {getCompanyInitial(singleApplication.companyName ?? "company")}
                             </span>
                         </div>
                         <div className="flex-1 min-w-0">
                             <h1 className="text-4xl font-semibold tracking-tight text-foreground mb-3 leading-tight">
-                                {application.jobTitle}
+                                {singleApplication.jobTitle}
                             </h1>
                             <div className="flex items-center gap-2.5 text-muted-foreground">
-                                <span className="font-medium text-base">{application.company}</span>
-                                {application.companyUrl && (
+                                <span className="font-medium text-base">{singleApplication.companyName}</span>
+                                {singleApplication.sourceUrl && (
                                     <a
                                         href={application.companyUrl}
                                         target="_blank"
@@ -230,23 +217,18 @@ export function ApplicationDetailsLayout() {
                                 )}
                             </div>
                         </div>
-                        <Badge
-                            variant="outline"
-                            className={`${statusConfig.className} border text-sm font-medium px-3.5 py-1.5 shrink-0`}
-                        >
-                            {statusConfig.label}
-                        </Badge>
+                        {getStatusBadge(singleApplication?.currentStatus ?? "pending")}
                     </div>
 
                     {/* Dates */}
                     <div className="flex items-center gap-8 text-sm text-muted-foreground/80">
                         <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
-                            <span>Applied {formatDate(application.appliedDate)}</span>
+                            <span>Applied {moment(singleApplication?.appliedAt).startOf("hour").fromNow()}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
-                            <span>Updated {formatDate(application.updatedDate)}</span>
+                            <span>Updated {moment(singleApplication?.updatedAt).startOf("hour").fromNow()}</span>
                         </div>
                     </div>
                 </div>

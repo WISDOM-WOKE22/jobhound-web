@@ -12,3 +12,11 @@ export function toQueryString(params: Record<string, any>): string {
         )
         .join('&');
 }
+
+export const getCompanyInitial = (company: string) => {
+    return company.charAt(0).toUpperCase();
+};
+
+export const getEmailInitial = (email: string) => {
+    return email.charAt(0).toUpperCase();
+};

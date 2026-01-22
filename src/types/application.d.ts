@@ -1,26 +1,20 @@
 export interface IApplicationType {
     id: string
+    _id: string
     userId: string
 
     jobTitle: string
     company: string
+    companyName: string
+    sourceUrl?: string
 
-    source: 'LinkedIn' | 'Indeed' | 'CompanySite' | 'Referral' | 'Other'
+    source: "string"
     sourceUrl?: string
 
     recruiterName?: string
     recruiterEmail?: string
 
-    currentStatus:
-    | 'applied'
-    | 'under_review'
-    | 'shortlisted'
-    | 'interview_scheduled'
-    | 'interview_completed'
-    | 'assessment'
-    | 'offer'
-    | 'rejected'
-    | 'withdrawn'
+    currentStatus: string
 
     appliedAt?: Date
     lastStatusUpdateAt: Date
