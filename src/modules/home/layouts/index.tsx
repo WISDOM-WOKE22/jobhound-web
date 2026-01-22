@@ -379,7 +379,7 @@ export function HomeLayout() {
                                         key={application.id}
                                         className="group relative overflow-hidden border-border/50 shadow-sm hover:shadow-lg hover:border-primary/50 transition-all duration-300 cursor-pointer animate-in fade-in slide-in-from-right-4"
                                         style={{ animationDelay: `${400 + index * 100}ms` }}
-                                        onClick={() => router.push(`/applications/${application.id}`)}
+                                        onClick={() => router.push(`/applications/${application._id}`)}
                                     >
                                         <CardContent className="p-4 space-y-3">
                                             <div className="flex items-start justify-between gap-3">

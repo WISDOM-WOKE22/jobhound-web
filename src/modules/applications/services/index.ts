@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { fetcher } from "@/lib/fetcher";
 import useSWR from "swr"
-import { ApplicationResponseType, IApplicationType } from "@/types";
+import { ApplicationResponseType, IApplicationType, SingleApplicationTimelineType, EmailContentType } from "@/types";
 import { toQueryString } from "@/utils";
 
 export interface ApplicationQueryParams {
@@ -22,6 +22,9 @@ export const useApplicationsService = (queryParams?: ApplicationQueryParams) => 
     const [application, setApplication] = useState<IApplicationType | null>(null);
     const [ singleApplicationLoading, setSingleApplicationLoading] = useState(false);
     const [ singleApplication, setSingleApplication] = useState<IApplicationType | null>(null);
+    const [ singleApplicationTimeline, setSingleApplicationTimeline] = useState<SingleApplicationTimelineType[] | null>(null);
+    const [ emailContent, setEmailContent] = useState<EmailContentType | null>(null);
+    const [ emailContentLoading, setEmailContentLoading] = useState(false);
     const queryString = toQueryString(queryParams || {});
 
     const { data, isLoading, error, mutate } = useSWR<ApplicationResponseType>(
@@ -51,6 +54,7 @@ export const useApplicationsService = (queryParams?: ApplicationQueryParams) => 
             const response = await api.get(`/applications/${id}`);
             if (response.status === 200) {
                 setSingleApplication(response.data.data.application);
+                setSingleApplicationTimeline(response.data.data.timelineEmails);
             }
             setSingleApplicationLoading(false);
         }
@@ -60,6 +64,25 @@ export const useApplicationsService = (queryParams?: ApplicationQueryParams) => 
             setServerError(error.response.data.message);
         } finally {
             setSingleApplicationLoading(false);
+        }
+    }
+
+    const getEmailContent = async (id: string) => {
+        try {
+            setEmailContentLoading(true);
+            const response = await api.get(`/processed-mail/get-email-by-provider-message-id/${id}`);
+            console.log(response.data.data);
+            if (response.status === 200) {
+                setEmailContent(response.data.data);
+            }
+            setEmailContentLoading(false);
+        }
+        catch (error: any) {
+            setEmailContentLoading(false);
+            toast.error(error.message);
+            setServerError(error.response.data.message);
+        } finally {
+            setEmailContentLoading(false);
         }
     }
 
@@ -87,5 +110,9 @@ export const useApplicationsService = (queryParams?: ApplicationQueryParams) => 
         singleApplication,
         singleApplicationLoading,
         getSingleApplication,
+        singleApplicationTimeline,
+        getEmailContent,
+        emailContentLoading,
+        emailContent
     }
 }

@@ -16,12 +16,12 @@ import {
     Globe,
     ArrowLeft,
 } from "lucide-react";
-import { ApplicationStatus } from "@/types";
+import { ApplicationStatus, SingleApplicationTimelineType } from "@/types";
 import { useApplicationsService } from "../services";
 import { ApplicationDetailsPreloader } from "../components/preloader/details";
 import { getStatusBadge } from "@/core/commons/components/badge/badge";
 import moment from "moment";
-import { getCompanyInitial, getEmailInitial } from "@/utils";
+import { getCompanyInitial } from "@/utils";
 
 // Types for timeline events and email updates
 interface TimelineEvent {
@@ -59,15 +59,9 @@ interface ApplicationDetails {
 export function ApplicationDetailsLayout() {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
-    const [selectedEmail, setSelectedEmail] = useState<{
-        from: string;
-        subject: string;
-        timestamp: string;
-        to?: string;
-        body?: string;
-    } | null>(null);
+    const [selectedEmail, setSelectedEmail] = useState<SingleApplicationTimelineType | null>(null);
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-    const { getSingleApplication, singleApplicationLoading, singleApplication } = useApplicationsService()
+    const { getSingleApplication, singleApplicationLoading, singleApplication, singleApplicationTimeline } = useApplicationsService()
 
     useEffect(() => {
         if (id) {
@@ -75,74 +69,6 @@ export function ApplicationDetailsLayout() {
         }
     }, [id]);
 
-    // Mock data - in production, fetch based on params.id
-    const application: ApplicationDetails = {
-        id: id || "1",
-        jobTitle: "Senior Frontend Engineer",
-        company: "Stripe",
-        status: "interviewing",
-        appliedDate: "2025-12-15",
-        updatedDate: "2025-12-28",
-        companyUrl: "https://stripe.com",
-        jobPostingUrl: "https://stripe.com/jobs/senior-frontend-engineer",
-        timeline: [
-            {
-                id: "1",
-                status: "interviewing",
-                label: "Interview Scheduled",
-                timestamp: "Dec 28, 2025 at 1:00 AM",
-                source: "email",
-                emailSubject: "Interview Invitation - Stripe",
-                emailFrom: "recruiting@stripe.com",
-                isCurrent: true,
-            },
-            {
-                id: "2",
-                status: "applied",
-                label: "Under Review",
-                timestamp: "Dec 20, 2025 at 1:00 AM",
-                source: "email",
-                emailSubject: "Application Received - Senior Frontend Engineer",
-                emailFrom: "recruiting@stripe.com",
-            },
-            {
-                id: "3",
-                status: "applied",
-                label: "Applied",
-                timestamp: "Dec 15, 2025 at 1:00 AM",
-                source: "manual",
-            },
-        ],
-        lastEmail: {
-            id: "1",
-            from: "recruiting@stripe.com",
-            subject: "Interview Invitation - Stripe",
-            timestamp: "Dec 28, 2025 at 1:00 AM",
-        },
-    };
-
-    const handleGenerateMailResponse = () => {
-        // TODO: Implement mail response generation
-        console.log("Generate mail response for:", application.lastEmail);
-    };
-
-    const handleVisitSite = () => {
-        if (application.jobPostingUrl) {
-            window.open(application.jobPostingUrl, "_blank", "noopener,noreferrer");
-        }
-    };
-
-    const handleEmailClick = (event: TimelineEvent) => {
-        if (event.emailFrom && event.emailSubject) {
-            setSelectedEmail({
-                from: event.emailFrom,
-                subject: event.emailSubject,
-                timestamp: event.timestamp,
-                to: "your-email@example.com", // In production, get from user data
-            });
-            setIsEmailModalOpen(true);
-        }
-    };
 
     const getSourceIcon = (source: string) => {
         switch (source) {
@@ -185,7 +111,7 @@ export function ApplicationDetailsLayout() {
                 {/* Back Navigation - Minimal */}
                 <button
                     onClick={() => router.push("/applications")}
-                    className="group flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 mb-8 -ml-1"
+                    className="group flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 mb-8 -ml-1 cursor-pointer"
                 >
                     <ChevronLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
                     <span>Back to applications</span>
@@ -207,7 +133,7 @@ export function ApplicationDetailsLayout() {
                                 <span className="font-medium text-base">{singleApplication.companyName}</span>
                                 {singleApplication.sourceUrl && (
                                     <a
-                                        href={application.companyUrl}
+                                        href={singleApplication.sourceUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-muted-foreground/70 hover:text-foreground transition-colors duration-200"
@@ -245,13 +171,13 @@ export function ApplicationDetailsLayout() {
                                 <div className="absolute left-5 top-0 bottom-0 w-px bg-border/40" />
 
                                 <div className="space-y-10 relative">
-                                    {application.timeline.map((event, index) => {
-                                        const SourceIcon = getSourceIcon(event.source);
-                                        const isCurrent = event.isCurrent;
+                                    {singleApplicationTimeline && singleApplicationTimeline.length > 0 && singleApplicationTimeline?.map((event, index) => {
+                                        const SourceIcon = getSourceIcon(event.from ?? "");
+                                        const isCurrent = event.status === singleApplication?.currentStatus;
 
                                         return (
                                             <div
-                                                key={event.id}
+                                                key={event._id}
                                                 className="relative flex gap-5 animate-in fade-in slide-in-from-left-4"
                                                 style={{ animationDelay: `${index * 100}ms` }}
                                             >
@@ -283,36 +209,46 @@ export function ApplicationDetailsLayout() {
                                                                         : "text-foreground/70 text-base"
                                                                 }`}
                                                             >
-                                                                {event.label}
+                                                                {event.subject}
                                                             </h3>
                                                             {isCurrent && (
                                                                 <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                                                             )}
                                                         </div>
                                                         <p className="text-sm text-muted-foreground/80">
-                                                            {event.timestamp}
+                                                            {moment(event.receivedAt).startOf("hour").fromNow()}
                                                         </p>
                                                     </div>
 
-                                                    {event.emailFrom && (
+                                                    {event.from && (
                                                         <div className="pt-1 space-y-2">
                                                             <p className="text-xs text-muted-foreground/70">
-                                                                From: {event.emailFrom}
+                                                                From: {event.from}
                                                             </p>
-                                                            {event.emailSubject && (
+                                                            {event.subject && (
                                                                 <button
-                                                                    onClick={() => handleEmailClick(event)}
+                                                                    onClick={() => {
+                                                                        setSelectedEmail({
+                                                                            emailAccountId: event.emailAccountId,
+                                                                            from: event.from,
+                                                                            subject: event.subject,
+                                                                            receivedAt: event.receivedAt,
+                                                                            threadId: event.threadId,
+                                                                           
+                                                                        });
+                                                                        setIsEmailModalOpen(true);
+                                                                    }}
                                                                     className="w-full text-left p-4 rounded-xl bg-muted/20 border border-border/40 hover:bg-muted/30 hover:border-border/60 transition-all duration-200 cursor-pointer group"
                                                                 >
                                                                     <p className="text-sm font-medium text-foreground/90 group-hover:text-primary transition-colors duration-200">
-                                                                        {event.emailSubject}
+                                                                        {event.subject}
                                                                     </p>
                                                                 </button>
                                                             )}
                                                         </div>
                                                     )}
 
-                                                    {event.source === "manual" && (
+                                                    {event.isJobRelated && (
                                                         <p className="text-xs text-muted-foreground/60 italic">
                                                             Manually updated
                                                         </p>
@@ -324,43 +260,6 @@ export function ApplicationDetailsLayout() {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Last Email Update */}
-                        <div className="space-y-4">
-                            <h2 className="text-xl font-semibold text-foreground tracking-tight">Last Email Update</h2>
-                            <button
-                                onClick={() => {
-                                    setSelectedEmail({
-                                        from: application.lastEmail.from,
-                                        subject: application.lastEmail.subject,
-                                        timestamp: application.lastEmail.timestamp,
-                                        to: "your-email@example.com",
-                                    });
-                                    setIsEmailModalOpen(true);
-                                }}
-                                className="w-full text-left p-5 rounded-xl bg-muted/20 border border-border/40 hover:bg-muted/30 hover:border-border/60 transition-all duration-200 group cursor-pointer"
-                            >
-                                <div className="flex items-start gap-4">
-                                    <div className="shrink-0 w-11 h-11 rounded-full bg-green-500/10 flex items-center justify-center">
-                                        <span className="text-sm font-semibold text-green-700 dark:text-green-400">
-                                            {getEmailInitial(application.lastEmail.from)}
-                                        </span>
-                                    </div>
-                                    <div className="flex-1 min-w-0 space-y-1.5">
-                                        <p className="font-medium text-foreground group-hover:text-primary transition-colors duration-200">
-                                            {application.lastEmail.from}
-                                        </p>
-                                        <p className="text-sm text-muted-foreground/80">
-                                            {application.lastEmail.timestamp}
-                                        </p>
-                                        <p className="text-sm font-medium text-foreground/90 mt-2.5">
-                                            {application.lastEmail.subject}
-                                        </p>
-                                    </div>
-                                    <ChevronLeft className="h-4 w-4 text-muted-foreground/50 group-hover:text-foreground -rotate-180 transition-all duration-200 shrink-0 mt-1" />
-                                </div>
-                            </button>
-                        </div>
                     </div>
 
                     {/* Right Column - Actions */}
@@ -369,7 +268,7 @@ export function ApplicationDetailsLayout() {
                             <h2 className="text-xl font-semibold text-foreground tracking-tight">Actions</h2>
                             <div className="space-y-3">
                                 <Button
-                                    onClick={handleGenerateMailResponse}
+                                    // onClick={handleGenerateMailResponse}
                                     className="w-full justify-start h-auto py-3.5 px-4 rounded-xl border-border/50 hover:border-border hover:bg-muted/50 transition-all duration-200 group bg-background cursor-pointer"
                                     variant="outline"
                                 >
@@ -377,8 +276,8 @@ export function ApplicationDetailsLayout() {
                                     <span className="font-medium">Generate Mail Response</span>
                                 </Button>
                                 <Button
-                                    onClick={handleVisitSite}
-                                    disabled={!application.jobPostingUrl}
+                                    // onClick={handleVisitSite}
+                                    disabled={!singleApplication.sourceUrl}
                                     className="w-full justify-start h-auto py-3.5 px-4 rounded-xl border-border/50 hover:border-border hover:bg-muted/50 transition-all duration-200 group bg-background cursor-pointer"
                                     variant="outline"
                                 >
@@ -392,11 +291,11 @@ export function ApplicationDetailsLayout() {
             </div>
 
             {/* Email View Modal */}
-            <ViewEmailModal
+            {selectedEmail && <ViewEmailModal
                 open={isEmailModalOpen}
                 onOpenChange={setIsEmailModalOpen}
                 email={selectedEmail}
-            />
+            />}
         </DashboardLayout>
     );
 }

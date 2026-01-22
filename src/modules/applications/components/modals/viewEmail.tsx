@@ -6,63 +6,36 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Mail, Clock } from "lucide-react";
-
-interface EmailData {
-    from: string;
-    to?: string;
-    subject: string;
-    timestamp: string;
-    body?: string;
-}
-
+import { useApplicationsService } from "../../services";
+import { SingleApplicationTimelineType } from "@/types";
+import { useEffect } from "react";
+import { useMainStore } from "@/lib/zustand/store";
 interface ViewEmailModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    email: EmailData | null;
+    email: SingleApplicationTimelineType | null;
 }
 
 export function ViewEmailModal({ open, onOpenChange, email }: ViewEmailModalProps) {
+    const { getEmailContent, emailContentLoading, emailContent } = useApplicationsService();
+    const { user } = useMainStore();
+    
+    useEffect(() => {
+        if (open && email?.threadId) {
+            getEmailContent(email.threadId);
+        }
+    }, [email?.threadId]);
+
     if (!email) return null;
 
     const getEmailInitial = (email: string) => {
         return email.charAt(0).toUpperCase();
     };
 
-    const formatTimestamp = (timestamp: string) => {
-        // Return as-is if already formatted, or format if it's a date string
-        try {
-            const date = new Date(timestamp);
-            if (!isNaN(date.getTime())) {
-                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                const month = months[date.getMonth()];
-                const day = date.getDate();
-                const year = date.getFullYear();
-                const hours = date.getHours();
-                const minutes = date.getMinutes();
-                const ampm = hours >= 12 ? "PM" : "AM";
-                const displayHours = hours % 12 || 12;
-                const displayMinutes = minutes.toString().padStart(2, "0");
-                return `${month} ${day.toString().padStart(2, "0")}, ${year} at ${displayHours}:${displayMinutes} ${ampm}`;
-            }
-            return timestamp;
-        } catch {
-            return timestamp;
-        }
-    };
-
-    // Mock email body if not provided
-    const emailBody = email.body || `Dear Candidate,
-
-Thank you for your interest in the ${email.subject.includes("Interview") ? "position" : "role"} at our company.
-
-${email.subject.includes("Interview") 
-    ? "We are pleased to invite you for an interview. Please let us know your availability."
-    : "We have received your application and are currently reviewing it. We will get back to you soon."
-}
-
-Best regards,
-Recruiting Team`;
+    // Email body content
+    const emailBody = emailContent?.body || "";
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -77,45 +50,90 @@ Recruiting Team`;
                             <DialogTitle className="text-2xl font-semibold text-foreground mb-2 leading-tight">
                                 {email.subject}
                             </DialogTitle>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground/80">
-                                <Clock className="h-4 w-4" />
-                                <span>{formatTimestamp(email.timestamp)}</span>
-                            </div>
+                            {emailContentLoading ? (
+                                <div className="flex items-center gap-2 mt-2">
+                                    <Skeleton className="h-4 w-4 rounded" />
+                                    <Skeleton className="h-4 w-40" />
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground/80">
+                                    <Clock className="h-4 w-4" />
+                                    <span>{emailContent?.date || "Loading..."}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </DialogHeader>
 
                 {/* Email Content */}
                 <div className="flex-1 overflow-y-auto px-8 py-8 space-y-6">
-                    {/* From/To Section */}
-                    <div className="space-y-4">
-                        <div className="flex items-start gap-4">
-                            <div className="shrink-0 w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
-                                <span className="text-base font-semibold text-green-700 dark:text-green-400">
-                                    {getEmailInitial(email.from)}
-                                </span>
-                            </div>
-                            <div className="flex-1 min-w-0 space-y-2">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-sm font-medium text-foreground/70">From:</span>
-                                    <span className="text-sm text-foreground">{email.from}</span>
-                                </div>
-                                {email.to && (
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-sm font-medium text-foreground/70">To:</span>
-                                        <span className="text-sm text-foreground">{email.to}</span>
+                    {emailContentLoading ? (
+                        <>
+                            {/* From/To Section Skeleton */}
+                            <div className="space-y-4 animate-in fade-in duration-300">
+                                <div className="flex items-start gap-4">
+                                    <Skeleton className="w-12 h-12 rounded-full shrink-0" />
+                                    <div className="flex-1 min-w-0 space-y-3">
+                                        <div className="flex items-center gap-3">
+                                            <Skeleton className="h-4 w-12" />
+                                            <Skeleton className="h-4 w-48" />
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <Skeleton className="h-4 w-10" />
+                                            <Skeleton className="h-4 w-40" />
+                                        </div>
                                     </div>
-                                )}
+                                </div>
                             </div>
-                        </div>
-                    </div>
 
-                    {/* Email Body */}
-                    <div className="pt-6 border-t border-border/30">
-                        <div className="text-base text-foreground/90 leading-relaxed whitespace-pre-wrap">
-                            {emailBody}
-                        </div>
-                    </div>
+                            {/* Email Body Skeleton */}
+                            <div className="pt-6 border-t border-border/30 space-y-3 animate-in fade-in duration-500">
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-5/6" />
+                                <Skeleton className="h-4 w-full mt-4" />
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-4/5" />
+                                <Skeleton className="h-4 w-full mt-4" />
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-3/4" />
+                                <Skeleton className="h-4 w-full mt-4" />
+                                <Skeleton className="h-4 w-5/6" />
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            {/* From/To Section */}
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-4">
+                                    <div className="shrink-0 w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                                        <span className="text-base font-semibold text-green-700 dark:text-green-400">
+                                            {getEmailInitial(emailContent?.from || email.from || "")}
+                                        </span>
+                                    </div>
+                                    <div className="flex-1 min-w-0 space-y-2">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-sm font-medium text-foreground/70">From:</span>
+                                            <span className="text-sm text-foreground">{emailContent?.from || email.from}</span>
+                                        </div>
+                                        {user?.email && (
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-sm font-medium text-foreground/70">To:</span>
+                                                <span className="text-sm text-foreground">{user.email}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Email Body */}
+                            <div className="pt-6 border-t border-border/30">
+                                <div className="text-base text-foreground/90 leading-relaxed whitespace-pre-wrap">
+                                    {emailBody || email.snippet || "No content available"}
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Footer */}
@@ -123,12 +141,13 @@ Recruiting Team`;
                     <div className="flex items-center justify-end">
                         <button
                             onClick={() => onOpenChange(false)}
-                            className="px-4 py-2 text-sm font-medium text-foreground hover:bg-muted/50 rounded-lg transition-colors duration-200"
+                            disabled={emailContentLoading}
+                            className="px-4 py-2 text-sm font-medium text-foreground hover:bg-muted/50 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Close
                         </button>
                     </div>
-        </div>
+                </div>
             </DialogContent>
         </Dialog>
     );
