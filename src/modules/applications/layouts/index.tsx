@@ -257,7 +257,7 @@ export function ApplicationsLayout() {
                                                 
                                                 return (
                                                     <TableRow 
-                                                        key={application.id}
+                                                        key={application._id}
                                                         className="group hover:bg-muted/40 transition-all duration-200 cursor-pointer border-b border-border/30 animate-in fade-in slide-in-from-left-2"
                                                         style={{ animationDelay: `${index * 30}ms` }}
                                                         onClick={() => router.push(`/applications/${application._id}`)}

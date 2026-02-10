@@ -16,6 +16,8 @@ import {
     RefreshCw,
     Inbox,
     Sparkles,
+    Handshake,
+    ListTodo,
 } from "lucide-react";
 import { StatsChart } from "../components/charts/barChart";
 import { getStatusBadge } from "@/core/commons/components/badge/badge";
@@ -299,22 +301,22 @@ export function HomeLayout() {
                             <div className="animate-in fade-in slide-in-from-left-4 duration-500 delay-200">
                                 <StatsCard
                                     title="Active Applications"
-                                    stat={data?.totalActiveApplications}
-                                    Icon={TrendingUp}
+                                    stat={data?.statusBreakdown.applied}
+                                    Icon={ListTodo}
                                 />
                             </div>
                             <div className="animate-in fade-in slide-in-from-left-4 duration-500 delay-200">
                                 <StatsCard
                                     title="Interviews"
-                                    stat={data?.totalInterviews}
+                                    stat={data?.statusBreakdown.interview_scheduled}
                                     Icon={TrendingUp}
                                 />
                             </div>
                             <div className="animate-in fade-in slide-in-from-left-4 duration-500 delay-200">
                                 <StatsCard
                                     title="Offers"
-                                    stat={data?.totalOffers}
-                                    Icon={TrendingUp}
+                                    stat={data?.statusBreakdown.offer}
+                                    Icon={Handshake}
                                 />
                             </div>
                         </div>

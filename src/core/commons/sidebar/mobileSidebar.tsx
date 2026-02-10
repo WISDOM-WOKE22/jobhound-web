@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, LogOut, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -30,13 +31,18 @@ import {
   MenuItem,
 } from '../../constants/sidebar';
 import { useMainStore } from '@/lib/zustand/store';
+import { Logo } from '@/assets/svg';
+import { cn } from '@/lib/utils';
 
-export function MobileSidebar({ userRole, className }: AppSidebarProps) {
+export function MobileSidebar({ userRole }: AppSidebarProps) {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
   const { setTheme } = useTheme();
   const { logout, isLoading } = useLogoutService();
   const user = useMainStore((state) => state.user);
-  typeof userRole === 'string';
+
+  const closeSheet = () => setOpen(false);
+
   const allowedPermissions: string[] = userRole
     ? Array.from(
         PERMISSIONS[userRole as string as keyof typeof PERMISSIONS] || []
@@ -46,7 +52,6 @@ export function MobileSidebar({ userRole, className }: AppSidebarProps) {
     (item) => item.permission !== null
   ).filter((item) => allowedPermissions.includes(item.permission as string));
 
-  // Group menu items
   const groupedMenuItems = accessibleMenuItems.reduce(
     (groups, item) => {
       const group = groups[item.group] || [];
@@ -58,19 +63,11 @@ export function MobileSidebar({ userRole, className }: AppSidebarProps) {
   );
 
   const isActive = (href: string) => {
-    // Base route check (e.g., /dashboard)
     if (href === pathname) return true;
-
-    // Handle nested routes
-    const baseRoute = href.split('/')[1]; // Get the first segment
+    const baseRoute = href.split('/')[1];
     const currentRoute = pathname.split('/')[1];
-
-    // If base routes match and href is not home
     if (baseRoute === currentRoute && href !== '/') return true;
-
-    // If the current path starts with the href (for deeper nesting)
     if (pathname.startsWith(href) && href !== '/') return true;
-
     return false;
   };
 
@@ -81,122 +78,153 @@ export function MobileSidebar({ userRole, className }: AppSidebarProps) {
       exams: 'Exam Management',
       communication: 'Communication',
       settings: 'System Settings',
+      applications: 'Applications',
     };
     return groupLabels[name] || name.charAt(0).toUpperCase() + name.slice(1);
   };
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant='ghost' size='icon' className='cursor-pointer'>
-          <Menu className='size-6' />
-          <span className='sr-only'>Toggle menu</span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 shrink-0 rounded-xl lg:hidden"
+          aria-label="Open menu"
+        >
+          <Menu className="size-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side='left' className='p-0 w-[260px]'>
-        <div className='flex flex-col h-full'>
-          {/* Header */}
-          <div className='p-4 border-b'>
-            <h1 className='text-2xl text-center'>{user?.firstName} {user?.lastName}</h1>
-          </div>
+      <SheetContent
+        side="left"
+        className="flex w-[280px] flex-col gap-0 border-r border-sidebar-border bg-sidebar p-0"
+      >
+        {/* Header: Logo + Job Hound */}
+        <div className="flex shrink-0 border-b border-sidebar-border">
+          <Link
+            href="/home"
+            onClick={closeSheet}
+            className="flex items-center gap-3 px-4 py-4 outline-none ring-sidebar-ring transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-inset"
+          >
+            <Logo className="h-9 w-9 shrink-0" />
+            <span className="font-semibold text-sidebar-foreground text-base tracking-tight">
+              Job Hound
+            </span>
+          </Link>
+        </div>
 
-          {/* Menu Items */}
-          <div className='flex-1 overflow-y-auto p-3'>
-            <SidebarMenu className='p-3 flex flex-col gap-4'>
-              {Object.entries(groupedMenuItems).map(([group, items]) => (
-                <div key={group} className='flex flex-col gap-1'>
-                  <div className='px-2 mb-2'>
-                    <span className='text-xs font-medium text-muted-foreground'>
-                      {formatGroupName(group)}
-                    </span>
-                  </div>
-                  {items.map((item) => (
+        {/* Nav */}
+        <div className="min-h-0 flex-1 overflow-y-auto py-4">
+          <SidebarMenu className="flex flex-col gap-6 px-3">
+            {Object.entries(groupedMenuItems).map(([group, items]) => (
+              <div key={group} className="flex flex-col gap-1">
+                <div className="px-3 mb-1.5">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {formatGroupName(group)}
+                  </span>
+                </div>
+                {items.map((item) => {
+                  const active = isActive(item.href);
+                  const Icon = item.icon;
+                  return (
                     <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild>
+                      <SidebarMenuButton asChild isActive={active}>
                         <Link
                           href={item.href}
-                          className={`h-[40px] flex items-center gap-2 rounded-md px-2
-                        ${
-                          isActive(item.href)
-                            ? 'bg-primary text-primary-foreground'
-                            : 'hover:bg-accent hover:text-accent-foreground'
-                        }`}
+                          onClick={closeSheet}
+                          className={cn(
+                            'h-11 flex items-center gap-3 rounded-xl px-3 font-medium transition-colors',
+                            active
+                              ? 'bg-primary text-primary-foreground'
+                              : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground'
+                          )}
                         >
-                          <item.icon className='h-5 w-5' />
-                          <span>{item.label}</span>
+                          <span
+                            className={cn(
+                              'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
+                              active
+                                ? 'bg-primary-foreground/20'
+                                : 'bg-sidebar-accent/50'
+                            )}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </span>
+                          <span className="truncate">{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
-                  ))}
-                </div>
-              ))}
-            </SidebarMenu>
-          </div>
+                  );
+                })}
+              </div>
+            ))}
+          </SidebarMenu>
+        </div>
 
-          {/* Footer */}
-          <div className='border-t p-4'>
-            <div className='flex items-center gap-2'>
-              <DropdownMenu>
-                <DropdownMenuTrigger>
-                  <Avatar className='cursor-pointer'>
+        {/* Footer: User + Logout */}
+        <div className="shrink-0 border-t border-sidebar-border p-3">
+          <div className="flex items-center gap-3 rounded-xl bg-sidebar-accent/30 px-3 py-2.5">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left outline-none ring-sidebar-ring focus-visible:ring-2"
+                >
+                  <Avatar className="h-9 w-9 shrink-0 ring-2 ring-sidebar-border">
                     {user?.photo ? (
-                      <AvatarImage src={user?.photo} alt='User' />
+                      <AvatarImage src={user?.photo} alt="" />
                     ) : (
-                      <AvatarFallback>
+                      <AvatarFallback className="text-xs font-semibold bg-primary text-primary-foreground">
                         {user?.firstName?.slice(0, 1)}
                         {user?.lastName?.slice(0, 1)}
                       </AvatarFallback>
                     )}
                   </Avatar>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <div className='border-b p-1 w-full min-w-[180px]'>
-                    <div className='flex flex-col text-sm'>
-                      <span className='font-medium'>{user?.firstName}</span>
-                      {/* <span className="text-xs text-muted-foreground">Platform Admin</span> */}
-                    </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-sidebar-foreground">
+                      {user?.firstName} {user?.lastName}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {user?.email}
+                    </p>
                   </div>
-                  <DropdownMenuItem>
-                    <Link href='/dashboard/settings'>Setting</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                      <DropdownMenuSubContent>
-                        <DropdownMenuItem onClick={() => setTheme('light')}>
-                          Light
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTheme('dark')}>
-                          Dark
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTheme('system')}>
-                          System
-                        </DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuSub>
-                  <DropdownMenuItem
-                    // onClick={() => logout()}
-                    // disabled={isLoading}
-                    className='bg-destructive/60'
-                  >
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <div className='flex flex-col text-sm'>
-                <span className='font-medium'>{user?.firstName}</span>
-                {/* <span className="text-xs text-muted-foreground">Platform Admin</span> */}
-              </div>
-              <Button variant='ghost' size='icon' className='ml-auto' onClick={() => logout()}>
-                {isLoading ? (
-                  <Loader2 className='h-4 w-4 animate-spin' />
-                ) : (
-                <LogOut className='h-4 w-4' />
-                )}
-                <span className='sr-only'>Log out</span>
-              </Button>
-            </div>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link href="/settings">Settings</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
+                  <DropdownMenuPortal>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuItem onClick={() => setTheme('light')}>
+                        Light
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTheme('dark')}>
+                        Dark
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTheme('system')}>
+                        System
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuPortal>
+                </DropdownMenuSub>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => logout()}
+              disabled={isLoading}
+              aria-label="Log out"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <LogOut className="h-4 w-4" />
+              )}
+            </Button>
           </div>
         </div>
       </SheetContent>

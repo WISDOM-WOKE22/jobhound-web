@@ -1,23 +1,33 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+
 export function FinalCTA() {
-    return (
-      <section className="py-16 px-5">
-        <div className="max-w-5xl mx-auto text-center rounded-3xl p-10 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-800 dark:to-gray-900 text-white shadow-2xl">
-          <h3 className="text-3xl md:text-4xl font-bold mb-3">
-            Start Learning Smarter
-          </h3>
-          <p className="text-white/80 max-w-2xl mx-auto">
-            Unlock personalized, interactive learning with beautiful animations
-            and intuitive tools.
+  const router = useRouter();
+
+  return (
+    <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8" aria-labelledby="cta-heading">
+      <div className="max-w-3xl mx-auto text-center">
+        <div className="rounded-2xl md:rounded-3xl border border-border/80 bg-foreground text-background px-6 py-12 md:px-12 md:py-16 shadow-lg">
+          <h2 id="cta-heading" className="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight">
+            Stop losing track of applications
+          </h2>
+          <p className="mt-4 text-background/80 text-sm md:text-base max-w-xl mx-auto">
+            Connect your inbox. We’ll keep every application, interview, and offer in one place.
           </p>
-          <div className="mt-6">
-            <a
-              href="/home"
-              className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-gray-900 font-semibold hover:scale-105 transition-transform"
+          <div className="mt-8">
+            <Button
+              onClick={() => router.push("/home")}
+              size="lg"
+              variant="secondary"
+              className="rounded-full px-8 font-medium bg-background text-foreground hover:bg-background/90"
             >
-              Get Started
-            </a>
+              Get started free
+            </Button>
           </div>
         </div>
-      </section>
-    );
-  }
+      </div>
+    </section>
+  );
+}

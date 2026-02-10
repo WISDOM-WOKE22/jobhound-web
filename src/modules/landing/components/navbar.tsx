@@ -51,6 +51,13 @@ export default function Navbar() {
   const handleLinkClick = (href: string) => {
     if (href.startsWith("http")) {
       window.open(href, "_blank", "noopener,noreferrer");
+    } else if (href.startsWith("/#") && typeof window !== "undefined") {
+      const id = href.slice(2);
+      if (window.location.pathname === "/" && id) {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      } else {
+        router.push(href);
+      }
     } else {
       router.push(href);
     }
@@ -58,6 +65,8 @@ export default function Navbar() {
   };
 
   const navLinks = [
+    { label: "Features", href: "/#features" },
+    { label: "Contact", href: "/#contact" },
     { label: "Pricing", href: "/pricing" },
     { label: "Blog", href: "/blog" },
   ];
@@ -104,57 +113,68 @@ export default function Navbar() {
             </Button>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button - visible only below md */}
           <button
-            className="md:hidden p-2 rounded-md text-foreground transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hidden cursor-pointer"
+            type="button"
+            className="inline-flex md:hidden h-10 w-10 items-center justify-center rounded-xl text-foreground transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
-              <X className="h-6 w-6" />
+              <X className="h-6 w-6" aria-hidden />
             ) : (
-              <Menu className="h-6 w-6" />
+              <Menu className="h-6 w-6" aria-hidden />
             )}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Overlay - Only render when open */}
+      {/* Mobile menu backdrop */}
       {mobileMenuOpen && (
-        <div
-          className="fixed inset-x-0 top-16 md:hidden z-40 bg-background border-t border-border shadow-lg"
-          aria-hidden={!mobileMenuOpen}
-        >
-          <div className="mx-auto max-w-6xl px-4 py-6">
-            <nav className="flex flex-col space-y-1" aria-label="Mobile navigation">
-              {navLinks.map((link) => (
-                <button
-                  key={link.label}
-                  onClick={() => handleLinkClick(link.href)}
-                  className="w-full text-left px-4 py-3 text-base font-medium text-foreground rounded-lg transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                >
-                  {link.label}
-                </button>
-              ))}
-            </nav>
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm md:hidden"
+          aria-label="Close menu"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
 
-            <div className="mt-6 pt-6 border-t border-border">
-              <Button
-                onClick={() => {
-                  login();
-                }}
-                disabled={isLoading}
-                variant={scrolled ? "default" : "outline"}
-                size="lg"
-                className="w-full rounded-full cursor-pointer"
+      {/* Mobile Menu Panel */}
+      <div
+        className={cn(
+          "fixed top-16 left-0 right-0 z-50 md:hidden h-[calc(100dvh-4rem)] overflow-y-auto border-t border-border bg-background shadow-lg transition-transform duration-300 ease-out",
+          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+        )}
+        aria-hidden={!mobileMenuOpen}
+      >
+        <div className="mx-auto max-w-6xl px-4 py-6">
+          <nav className="flex flex-col gap-0.5" aria-label="Mobile navigation">
+            {navLinks.map((link) => (
+              <button
+                key={link.label}
+                type="button"
+                onClick={() => handleLinkClick(link.href)}
+                className="w-full text-left px-4 py-3.5 text-base font-medium text-foreground rounded-xl transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
-                {isLoading ? <Spinner className="size-4 animate-spin" /> : "Get Started"}
-              </Button>
-            </div>
+                {link.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="mt-6 pt-6 border-t border-border">
+            <Button
+              onClick={() => login()}
+              disabled={isLoading}
+              variant="default"
+              size="lg"
+              className="w-full rounded-full cursor-pointer"
+            >
+              {isLoading ? <Spinner className="size-4 animate-spin" /> : "Get Started"}
+            </Button>
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 }

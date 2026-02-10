@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import AppSidebar from '../sidebar';
-// import ModeToggle from "../theme";
+// import { SidebarTrigger } from '@/components/ui/sidebar';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -17,9 +18,8 @@ import { MobileSidebar } from '../sidebar/mobileSidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useMainStore } from '@/lib/zustand/store';
 import { UserRole } from '@/core/constants/sidebar';
-import { useRouter } from 'next/navigation';
 import { useLogoutService } from '@/hooks/auth/logout';
-// import { NotificationCard } from '@/modules/dashboard/components/card/notification';
+import { Logo } from '@/assets/svg';
 
 export default function NavBar({
   title,
@@ -31,17 +31,20 @@ export default function NavBar({
   const { setTheme } = useTheme();
   const user = useMainStore((state) => state.user);
   const { logout, isLoading } = useLogoutService();
-  const router = useRouter();
+
+  const userRoleProp = (user?.role?.toUpperCase() as UserRole) || null;
 
   return (
-    <nav className='h-14 border-b flex justify-between items-center w-full px-4 fixed z-1 backdrop-blur-md'>
-      <AppSidebar userRole={(user?.role?.toUpperCase() as UserRole) || null} />
-      <main className='flex justify-between items-center w-full relative backdrop-blur-md max-lg:hidden'>
-        <div className='relative -left-2'>
-          <h1 className='text-xl font-bold'>{title}</h1>
-          <p className='text-[12px] text-gray-600 dark:text-gray-300'>
-            {subHeading}
-          </p>
+    <nav className='fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-md'>
+      <AppSidebar userRole={userRoleProp} />
+      {/* Desktop: title + avatar */}
+      <main className='flex w-full items-center justify-between backdrop-blur-md max-lg:hidden'>
+        <div className='flex items-center gap-2'>
+          {/* <SidebarTrigger className='size-8 shrink-0 rounded-lg' /> */}
+          <div>
+            <h1 className='text-xl font-bold'>{title}</h1>
+            <p className='text-[12px] text-muted-foreground'>{subHeading}</p>
+          </div>
         </div>
         <div className='flex flex-row items-center gap-2'>
           {/* <NotificationCard /> */}
@@ -67,11 +70,8 @@ export default function NavBar({
                   </span>
                 </div>
               </div>
-              <DropdownMenuItem
-                onClick={() => router.push('/dashboard/settings')}
-                className='cursor-pointer'
-              >
-                Setting
+              <DropdownMenuItem asChild>
+                <Link href='/settings'>Settings</Link>
               </DropdownMenuItem>
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
@@ -106,13 +106,71 @@ export default function NavBar({
         </div>
       </main>
 
-      {/* Mobile Navigation */}
-      <main className='w-full justify-between items-center flex flex-row lg:hidden'>
-        <MobileSidebar userRole={user?.role || null} />
-        <h1 className='text-xl' onClick={() => router.push('/dashboard')}>
-          {user?.firstName} {user?.lastName}
-        </h1>
-        {/* <NotificationCard /> */}
+      {/* Mobile: menu trigger, logo, title, avatar */}
+      <main className='flex w-full items-center gap-3 lg:hidden'>
+        <MobileSidebar userRole={userRoleProp} />
+        <Link
+          href='/home'
+          className='flex shrink-0 items-center gap-2 outline-none ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 rounded-md'
+          aria-label='Job Hound home'
+        >
+          <Logo className='h-8 w-8 shrink-0' />
+          <span className='hidden font-semibold text-foreground text-sm tracking-tight sm:inline'>
+            Job Hound
+          </span>
+        </Link>
+        <div className='min-w-0 flex-1'>
+          <h1 className='truncate text-base font-semibold sm:text-lg'>{title}</h1>
+          {subHeading ? (
+            <p className='truncate text-xs text-muted-foreground'>{subHeading}</p>
+          ) : null}
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type='button'
+              className='shrink-0 rounded-full outline-none ring-ring focus-visible:ring-2 focus-visible:ring-offset-2'
+              aria-label='Account menu'
+            >
+              <Avatar className='h-8 w-8'>
+                {user?.photo ? (
+                  <AvatarImage src={user.photo} alt='' />
+                ) : (
+                  <AvatarFallback className='text-xs'>
+                    {user?.firstName?.slice(0, 1)}
+                    {user?.lastName?.slice(0, 1)}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align='end' className='w-56'>
+            <div className='border-b px-2 py-2'>
+              <p className='truncate text-sm font-medium'>{user?.firstName} {user?.lastName}</p>
+              <p className='truncate text-xs text-muted-foreground'>{user?.email}</p>
+            </div>
+            <DropdownMenuItem asChild>
+              <Link href='/settings'>Settings</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem onClick={() => setTheme('light')}>Light</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('dark')}>Dark</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('system')}>System</DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+            {isLoading ? (
+              <DropdownMenuItem disabled>Logging out…</DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem onClick={() => logout()} className='text-destructive focus:text-destructive'>
+                Log out
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </main>
     </nav>
   );
