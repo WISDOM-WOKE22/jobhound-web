@@ -13,6 +13,7 @@ const ROUTE_PERMISSIONS: Record<string, string> = {
     '/billing': 'billing',
     '/help': 'help',
     '/logout': 'logout',
+    '/onboarding': 'onboarding',
 };
 
 const AUTH_ROUTES = [

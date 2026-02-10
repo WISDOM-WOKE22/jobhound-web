@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import DashboardLayout from "@/core/commons/layouts/dashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -20,8 +20,8 @@ import {
     ChevronLeft,
     Briefcase,
     Search,
-    Plus,
     RefreshCw,
+    Loader2,
 } from "lucide-react";
 import { useApplicationsService, ApplicationQueryParams } from "../services";
 import { useRouter } from "next/navigation";
@@ -29,6 +29,7 @@ import { getStatusBadge } from "@/core/commons/components/badge/badge";
 import { Button } from "@/components/ui/button";
 import { Preloader } from "../components/preloader";
 import moment from "moment";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -82,31 +83,38 @@ function NoResults({ searchQuery, onClear }: { searchQuery: string; onClear: () 
     );
 }
 
+const DEBOUNCE_MS = 400;
+
 export function ApplicationsLayout() {
     const router = useRouter();
     
-    // Pagination & Filter State
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     
-    // Debounce search input
+    // Debounce search: update debounced value after user stops typing; reset to page 1 when search changes
     useEffect(() => {
-        const timer = setTimeout(() => {
+        const timer = window.setTimeout(() => {
             setDebouncedSearch(searchQuery);
-            setCurrentPage(1); // Reset to first page on search
-        }, 300);
-        return () => clearTimeout(timer);
+            setCurrentPage(1);
+        }, DEBOUNCE_MS);
+        return () => window.clearTimeout(timer);
     }, [searchQuery]);
     
-    // Build query params
-    const queryParams: ApplicationQueryParams = {
-        limit: ITEMS_PER_PAGE,
-        offset: (currentPage - 1) * ITEMS_PER_PAGE,
-        ...(debouncedSearch && { company: debouncedSearch }),
-    };
+    // Stable query params so SWR key only changes when values change
+    const queryParams: ApplicationQueryParams = useMemo(
+        () => ({
+            limit: ITEMS_PER_PAGE,
+            offset: (currentPage - 1) * ITEMS_PER_PAGE,
+            ...(debouncedSearch.trim() ? { company: debouncedSearch.trim() } : {}),
+        }),
+        [currentPage, debouncedSearch]
+    );
     
     const { data, isLoading, pagination } = useApplicationsService(queryParams);
+    
+    // Only show full-page preloader on true initial load (no data yet, no search)
+    const isInitialLoad = isLoading && !data?.length && !debouncedSearch;
     
     // Extract pagination info from response
     const { 
@@ -168,13 +176,14 @@ export function ApplicationsLayout() {
         return companyName.charAt(0).toUpperCase();
     };
     
-    const clearSearch = () => {
+    const clearSearch = useCallback(() => {
         setSearchQuery("");
         setDebouncedSearch("");
-    };
+        setCurrentPage(1);
+    }, []);
 
-    // Loading State
-    if (isLoading) {
+    // Full-page preloader only on initial load (no data, no search). Refetches keep the same layout.
+    if (isInitialLoad) {
         return <Preloader />;
     }
 
@@ -202,15 +211,34 @@ export function ApplicationsLayout() {
                                     {debouncedSearch && ` matching "${debouncedSearch}"`}
                                 </p>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 flex-row">
+                                <Select>
+                                    <SelectTrigger defaultValue="personalized">
+                                        <SelectValue placeholder="Personalized" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="personalized">Personalized</SelectItem>
+                                        <SelectItem value="default">Default</SelectItem>
+                                    </SelectContent>
+                                </Select>
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                                     <Input
+                                        type="search"
                                         placeholder="Search by company..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="pl-9 h-9 w-[200px] sm:w-[240px]"
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter") e.preventDefault();
+                                        }}
+                                        className="pl-9 pr-9 h-9 w-[200px] sm:w-[240px]"
+                                        aria-label="Search applications by company"
                                     />
+                                    {isLoading && !isInitialLoad && (
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden>
+                                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>

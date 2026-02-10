@@ -1,4 +1,6 @@
 export interface UserType {
+    _id: string;
+    id: string;
     firstName?: string;
     lastName?: string;
     email: string;
@@ -31,4 +33,7 @@ export interface UserType {
     googleUserId?: string;
     googleIdToken?: string;
     googleTokenExpiry?: Date;
+    focusedTags: string[];
+    firstEmailProcessing: boolean;
+    isFirstApplicationCompleted: boolean;
 }
