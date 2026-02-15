@@ -3,13 +3,13 @@
 import DashboardLayout from "@/core/commons/layouts/dashboardLayout";
 import { StatsCard } from "@/core/commons/components";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+// import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { 
+import {
     Clock, 
     Building2, 
     ChevronRight, 
-    Briefcase, 
+    Briefcase,
     TrendingUp, 
     Loader2,
     RefreshCw,
@@ -26,16 +26,27 @@ import { EmptyState } from "../components/commons/empty-state";
 import { DashboardSkeleton } from "../components/commons/skeleton";
 // import { useState } from "react";
 import { IsMainSyncing } from "../components/commons/isMainSyncing";
+import { useProcessMail } from "@/hooks/process-mail";
+import { useEffect } from "react";
+import { DashboardStatsCards } from "../components/cards/dashboardCard";
 
 export function HomeLayout() {
     const router = useRouter();
     const { data, isLoading, syncEmail, isSyncing, instantSync, isInstantSyncing } = useHomeServices();
     const { user } = useMainStore();
+
+    const { processMail } = useProcessMail();
     // Check if data is empty
     const isDataEmpty = !data || 
-        (data.totalApplications === 0 && 
-         (!data.topFiveApplications || data.topFiveApplications.length === 0) &&
-         (!data.appliedCompanies || data.appliedCompanies.length === 0));
+    (data.totalApplications === 0 && 
+        (!data.topFiveApplications || data.topFiveApplications.length === 0) &&
+        (!data.appliedCompanies || data.appliedCompanies.length === 0));
+    
+    useEffect(() => {
+        if (!user?.firstEmailProcessing && !user?.isFirstApplicationCompleted) {
+            processMail();
+        }
+    }, []);
 
 
     if (isLoading) {
@@ -69,10 +80,7 @@ export function HomeLayout() {
     return (
         <DashboardLayout pageTitle="Home" subHeading="Welcome to the home page">
             <div className="space-y-6 animate-in fade-in duration-500">
-                {/* Overview Section */}
-                <Card className="border-border/50 shadow-sm hover:shadow-md transition-all duration-300 animate-in slide-in-from-bottom-4">
-                    <CardHeader className="pb-4">
-                        <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between">
                             <CardTitle className="text-xl font-semibold">Overview</CardTitle>
                             <div>
                                 <Button variant="outline" size="sm" className="cursor-pointer" onClick={instantSync}
@@ -92,40 +100,13 @@ export function HomeLayout() {
                                 </Button>
                             </div>
                         </div>
-                </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="animate-in fade-in slide-in-from-left-4 duration-500 delay-100">
-                                <StatsCard
-                                    title="Total Applications"
-                                    stat={data?.totalApplications}
-                                    Icon={Briefcase}
-                                />
-                            </div>
-                            <div className="animate-in fade-in slide-in-from-left-4 duration-500 delay-200">
-                                <StatsCard
-                                    title="Active Applications"
-                                    stat={data?.statusBreakdown.applied}
-                                    Icon={ListTodo}
-                                />
-                            </div>
-                            <div className="animate-in fade-in slide-in-from-left-4 duration-500 delay-200">
-                                <StatsCard
-                                    title="Interviews"
-                                    stat={data?.statusBreakdown.interview_scheduled}
-                                    Icon={TrendingUp}
-                                />
-                            </div>
-                            <div className="animate-in fade-in slide-in-from-left-4 duration-500 delay-200">
-                                <StatsCard
-                                    title="Offers"
-                                    stat={data?.statusBreakdown.offer}
-                                    Icon={Handshake}
-                                />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                <DashboardStatsCards
+                    totalApplications={data?.totalApplications}
+                    totalActiveApplications={data?.statusBreakdown.applied}
+                    totalInterviews={data?.statusBreakdown.interview_scheduled}
+                    totalOffers={data?.totalOffers}
+                />
+                {/* Overview Section */}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Left Column - Companies & Chart */}
