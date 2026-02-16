@@ -104,7 +104,7 @@ export function HomeLayout() {
                     totalApplications={data?.totalApplications}
                     totalActiveApplications={data?.statusBreakdown.applied}
                     totalInterviews={data?.statusBreakdown.interview_scheduled}
-                    totalOffers={data?.totalOffers}
+                    totalOffers={data?.statusBreakdown.offer}
                 />
                 {/* Overview Section */}
 

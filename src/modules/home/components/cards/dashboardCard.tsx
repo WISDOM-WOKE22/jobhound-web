@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Card } from "@/components/ui/card"
-import { Users, FileCheck, Building2, Briefcase } from "lucide-react"
+import { FileCheck, Building2, Briefcase, Handshake } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export interface DashboardStatsCardsProps {
@@ -34,15 +34,25 @@ const statCards = [
     borderColor: "border-emerald-200/50 dark:border-emerald-500/20",
   },
   {
-    key: "companies",
-    title: "Total Companies",
-    valueKey: "totalCompanies" as const,
-    icon: Building2,
-    gradient: "from-blue-500/10 to-indigo-500/5 dark:from-blue-500/20 dark:to-indigo-500/10",
-    iconBg: "bg-blue-500/15 dark:bg-blue-500/25",
-    iconColor: "text-blue-600 dark:text-blue-400",
-    borderColor: "border-blue-200/50 dark:border-blue-500/20",
+    key: "totalOffers",
+    title: "Total Offers",
+    valueKey: "totalOffers" as const,
+    icon: Handshake,
+    gradient: "from-green-500/10 to-lime-500/5 dark:from-green-500/20 dark:to-lime-500/10",
+    iconBg: "bg-green-500/15 dark:bg-green-500/25",
+    iconColor: "text-green-600 dark:text-green-400",
+    borderColor: "border-green-200/50 dark:border-green-500/20",
   },
+  // {
+  //   key: "companies",
+  //   title: "Total Companies",
+  //   valueKey: "totalCompanies" as const,
+  //   icon: Building2,
+  //   gradient: "from-blue-500/10 to-indigo-500/5 dark:from-blue-500/20 dark:to-indigo-500/10",
+  //   iconBg: "bg-blue-500/15 dark:bg-blue-500/25",
+  //   iconColor: "text-blue-600 dark:text-blue-400",
+  //   borderColor: "border-blue-200/50 dark:border-blue-500/20",
+  // },
 ]
 
 export function DashboardStatsCards({

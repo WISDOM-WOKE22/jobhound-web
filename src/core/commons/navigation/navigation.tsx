@@ -107,24 +107,24 @@ export default function NavBar({
       </main>
 
       {/* Mobile: menu trigger, logo, title, avatar */}
-      <main className='flex w-full items-center gap-3 lg:hidden'>
+      <main className='flex w-full items-center gap-3 lg:hidden justify-between'>
         <MobileSidebar userRole={userRoleProp} />
         <Link
           href='/home'
           className='flex shrink-0 items-center gap-2 outline-none ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 rounded-md'
           aria-label='Job Hound home'
         >
-          <Logo className='h-8 w-8 shrink-0' />
-          <span className='hidden font-semibold text-foreground text-sm tracking-tight sm:inline'>
+          <Logo className='h-15 w-15 shrink-0' />
+          {/* <span className='hidden font-semibold text-foreground text-sm tracking-tight sm:inline'>
             Job Hound
-          </span>
+          </span> */}
         </Link>
-        <div className='min-w-0 flex-1'>
+        {/* <div className='min-w-0 flex-1'>
           <h1 className='truncate text-base font-semibold sm:text-lg'>{title}</h1>
           {subHeading ? (
             <p className='truncate text-xs text-muted-foreground'>{subHeading}</p>
           ) : null}
-        </div>
+        </div> */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
