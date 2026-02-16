@@ -149,7 +149,7 @@ export function migrateAllMathFormats(editor: Editor): void {
     try {
       // Use setContent with emitUpdate: false to avoid triggering update handlers
       // during migration
-      editor.commands.setContent(processed, false);
+      editor.commands.setContent(processed, { emitUpdate: false });
     } catch (error) {
       console.warn("Error migrating math formats:", error);
     }

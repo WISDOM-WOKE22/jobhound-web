@@ -45,7 +45,7 @@ const textStyleActions = (editor: Editor): ToolbarButton[] => [
     label: "Paragraph",
     icon: Text,
     isActive: () => editor.isActive("paragraph"),
-    onSelect: () => editor.chain().focus().setParagraph().run(),
+    onSelect: () => editor.chain().focus().setNode("paragraph").run(),
   },
   {
     id: "heading1",
@@ -114,21 +114,39 @@ const blockActions = (editor: Editor): ToolbarButton[] => [
     label: "Bullet list",
     icon: List,
     isActive: () => editor.isActive("bulletList"),
-    onSelect: () => editor.chain().focus().toggleBulletList().run(),
+    onSelect: () => {
+      if (editor.isActive("bulletList")) {
+        editor.chain().focus().lift("bulletList").run();
+      } else {
+        editor.chain().focus().wrapIn("bulletList").run();
+      }
+    },
   },
   {
     id: "orderedList",
     label: "Numbered list",
     icon: ListOrdered,
     isActive: () => editor.isActive("orderedList"),
-    onSelect: () => editor.chain().focus().toggleOrderedList().run(),
+    onSelect: () => {
+      if (editor.isActive("orderedList")) {
+        editor.chain().focus().lift("orderedList").run();
+      } else {
+        editor.chain().focus().wrapIn("orderedList").run();
+      }
+    },
   },
   {
     id: "blockquote",
     label: "Blockquote",
     icon: Quote,
     isActive: () => editor.isActive("blockquote"),
-    onSelect: () => editor.chain().focus().toggleBlockquote().run(),
+    onSelect: () => {
+      if (editor.isActive("blockquote")) {
+        editor.chain().focus().lift("blockquote").run();
+      } else {
+        editor.chain().focus().wrapIn("blockquote").run();
+      }
+    },
   },
   {
     id: "codeBlock",

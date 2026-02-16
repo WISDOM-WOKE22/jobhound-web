@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import OnboardingFlow from "./OnboardingFlow";
 
 export const metadata = {
@@ -6,6 +7,18 @@ export const metadata = {
     "Select the application statuses you want to follow up with most.",
 };
 
+function OnboardingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center animate-pulse">
+      <div className="w-full max-w-lg h-96 bg-muted/50 rounded-xl" />
+    </div>
+  );
+}
+
 export default function OnboardingPage() {
-  return <OnboardingFlow />;
+  return (
+    <Suspense fallback={<OnboardingFallback />}>
+      <OnboardingFlow />
+    </Suspense>
+  );
 }

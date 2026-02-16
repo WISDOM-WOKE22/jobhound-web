@@ -58,7 +58,7 @@ export const createExtensions = ({
         class: "list-decimal list-outside pl-6 leading-relaxed space-y-1",
       },
     },
-  }),
+  }) as unknown as AnyExtension,
   Table.configure({
     resizable: true,
     allowTableNodeSelection: true,
