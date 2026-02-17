@@ -7,7 +7,7 @@ import { useLogoutService } from "@/hooks/auth/logout";
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL;
 
 export function SocketEvents() {
-  const { user } = useMainStore();
+  const { user, setUser } = useMainStore();
   const { logout } = useLogoutService();
   const socketRef = useRef<Socket | null>(null);
 
@@ -55,8 +55,10 @@ export function SocketEvents() {
       toast.success("Job search started");
     };
 
-    const onJobSearchCompleted = () => {
+    const onJobSearchCompleted = (payload: { data?: { user?: unknown } }) => {
       toast.success("Job search completed");
+      console.log({payload})
+      if (payload?.data?.user != null) setUser(payload.data.user as Parameters<typeof setUser>[0]);
     };
 
     socket.on("userBlocked", onUserBlocked);

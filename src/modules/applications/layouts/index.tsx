@@ -20,21 +20,21 @@ import {
     ChevronLeft,
     Briefcase,
     Search,
-    RefreshCw,
     Loader2,
 } from "lucide-react";
 import { useApplicationsService, ApplicationQueryParams } from "../services";
-import { useRouter } from "next/navigation";
 import { getStatusBadge } from "@/core/commons/components/badge/badge";
 import { Button } from "@/components/ui/button";
 import { Preloader } from "../components/preloader";
 import moment from "moment";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 const ITEMS_PER_PAGE = 10;
 
 // Empty State Component - defined outside component
 function EmptyState() {
+    const router = useRouter();
     return (
         <div className="flex flex-col items-center justify-center py-16 px-4 animate-in fade-in zoom-in-95 duration-500">
             <div className="relative mb-6">
@@ -50,13 +50,13 @@ function EmptyState() {
                 Start tracking your job applications by connecting your email or adding them manually.
             </p>
             <div className="flex items-center gap-3">
-                <Button variant="outline" className="h-10 px-4">
+                {/* <Button variant="outline" className="h-10 px-4">
                     <Search className="h-4 w-4 mr-2" />
                     Connect Email
-                </Button>
-                <Button className="h-10 px-4">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Sync Email
+                </Button> */}
+                <Button className="h-10 px-4 cursor-pointer" onClick={() => router.push("/home")} >
+                    {/* <RefreshCw className="h-4 w-4 mr-2" /> */}
+                    Go to Home
                 </Button>
             </div>
         </div>

@@ -36,4 +36,5 @@ export interface UserType {
     focusedTags: string[];
     firstEmailProcessing: boolean;
     isFirstApplicationCompleted: boolean;
+    firstEmailProcessingStarted: boolean;
 }

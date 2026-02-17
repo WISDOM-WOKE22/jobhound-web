@@ -12,49 +12,15 @@ import {
     Clock,
     Mail,
     User,
-    Sparkles,
     Globe,
     ArrowLeft,
 } from "lucide-react";
-import { ApplicationStatus, SingleApplicationTimelineType } from "@/types";
+import { SingleApplicationTimelineType } from "@/types";
 import { useApplicationsService } from "../services";
 import { ApplicationDetailsPreloader } from "../components/preloader/details";
 import { getStatusBadge } from "@/core/commons/components/badge/badge";
 import moment from "moment";
 import { getCompanyInitial } from "@/utils";
-
-// Types for timeline events and email updates
-interface TimelineEvent {
-    id: string;
-    status: ApplicationStatus;
-    label: string;
-    timestamp: string;
-    source: "email" | "manual" | "system";
-    emailSubject?: string;
-    emailFrom?: string;
-    isCurrent?: boolean;
-}
-
-interface EmailUpdate {
-    id: string;
-    from: string;
-    subject: string;
-    timestamp: string;
-    avatar?: string;
-}
-
-interface ApplicationDetails {
-    id: string;
-    jobTitle: string;
-    company: string;
-    status: ApplicationStatus;
-    appliedDate: string;
-    updatedDate: string;
-    companyUrl?: string;
-    jobPostingUrl?: string;
-    timeline: TimelineEvent[];
-    lastEmail: EmailUpdate;
-}
     
 export function ApplicationDetailsLayout() {
     const { id } = useParams<{ id: string }>();
@@ -200,7 +166,7 @@ export function ApplicationDetailsLayout() {
 
                                                 {/* Event Content */}
                                                 <div className="flex-1 pt-0.5 space-y-3">
-            <div>
+                                                    <div>
                                                         <div className="flex items-center gap-2.5 mb-1.5">
                                                             <h3
                                                                 className={`font-medium ${
@@ -267,14 +233,14 @@ export function ApplicationDetailsLayout() {
                         <div className="space-y-4">
                             <h2 className="text-xl font-semibold text-foreground tracking-tight">Actions</h2>
                             <div className="space-y-3">
-                                <Button
+                                {/* <Button
                                     // onClick={handleGenerateMailResponse}
                                     className="w-full justify-start h-auto py-3.5 px-4 rounded-xl border-border/50 hover:border-border hover:bg-muted/50 transition-all duration-200 group bg-background cursor-pointer"
                                     variant="outline"
                                 >
                                     <Sparkles className="h-4 w-4 mr-2.5 group-hover:scale-110 transition-transform duration-200" />
                                     <span className="font-medium">Generate Mail Response</span>
-                                </Button>
+                                </Button> */}
                                 <Button
                                     // onClick={handleVisitSite}
                                     disabled={!singleApplication.sourceUrl}

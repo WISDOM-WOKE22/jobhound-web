@@ -43,7 +43,7 @@ export function HomeLayout() {
         (!data.appliedCompanies || data.appliedCompanies.length === 0));
     
     useEffect(() => {
-        if (!user?.firstEmailProcessing && !user?.isFirstApplicationCompleted) {
+        if (!user?.isFirstApplicationCompleted) {
             processMail();
         }
     }, []);
@@ -55,7 +55,7 @@ export function HomeLayout() {
         );
     }
 
-    if(user?.firstEmailProcessing && !user?.isFirstApplicationCompleted) {
+    if(user?.firstEmailProcessing || user?.firstEmailProcessingStarted) {
         return (
             <DashboardLayout pageTitle="Home" subHeading="Welcome to JobTrackr">
                 <IsMainSyncing />

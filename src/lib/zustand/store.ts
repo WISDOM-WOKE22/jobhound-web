@@ -16,6 +16,6 @@ export const useMainStore = create<MainStoreType>()(
     setError: (error) => set({ error }),
     setIsLoading: (isLoading) => set({ isLoading }),
 }), {
-    name: "main-store",
+    name: "jobhound-store",
     storage: createJSONStorage(() => localStorage),
 }));
