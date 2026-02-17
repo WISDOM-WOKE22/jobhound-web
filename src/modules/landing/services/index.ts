@@ -53,9 +53,11 @@ export const useAuthServices = () => {
                 document.cookie = `isAuthenticated=true; path=/${secureFlag}; SameSite=Strict`;
                 setIsAuthenticated(true);
                 if(response.data.data.user.isOnBoarded) {
-                    router.push("/home");
+                window.location.href = "/home";
+                router.push("/home");
                 } else {
                     router.push("/onboarding");
+                    window.location.href = "/onboarding";
                 }
             }
         } catch (error: any) {
