@@ -60,10 +60,10 @@ export default function OnboardingFlow() {
   const canContinue = selected.length === REQUIRED_COUNT;
 
   // Load profile on mount
-  useEffect(() => {
-    getOnboardingStatus();
+  // useEffect(() => {
+  //   getOnboardingStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
-  }, []);
+  // }, []);
 
   // Pre-fill from user.focusedTags and redirect if already onboarded
   useEffect(() => {
