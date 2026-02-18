@@ -29,11 +29,15 @@ import { IsMainSyncing } from "../components/commons/isMainSyncing";
 import { useProcessMail } from "@/hooks/process-mail";
 import { useEffect } from "react";
 import { DashboardStatsCards } from "../components/cards/dashboardCard";
+import { useAuthServices } from "@/modules/landing/services";
+
+const USER_REFETCH_INTERVAL_MS = 4000;
 
 export function HomeLayout() {
     const router = useRouter();
     const { data, isLoading, syncEmail, isSyncing, instantSync, isInstantSyncing } = useHomeServices();
     const { user } = useMainStore();
+    const { getOnboardingStatus } = useAuthServices();
 
     const { processMail } = useProcessMail();
     // Check if data is empty
@@ -48,6 +52,25 @@ export function HomeLayout() {
         }
     }, []);
 
+    // While syncing, refetch user so we pick up when backend sets firstEmailProcessing to false
+    const isSyncingFirstEmail = Boolean(user?.firstEmailProcessing ?? user?.firstEmailProcessingStarted);
+    useEffect(() => {
+        if (!isSyncingFirstEmail || !user?._id) return;
+        const intervalId = window.setInterval(() => {
+            getOnboardingStatus();
+        }, USER_REFETCH_INTERVAL_MS);
+        return () => window.clearInterval(intervalId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- only run interval when syncing state or user id changes
+    }, [isSyncingFirstEmail, user?._id]);
+    if (isSyncingFirstEmail) {
+        return (
+            <DashboardLayout pageTitle="Home" subHeading="Welcome to JobTrackr">
+                <IsMainSyncing />
+            </DashboardLayout>
+        );
+    }
+
+    // Show syncing UI when first-time email processing is in progress
 
     if (isLoading) {
         return (
@@ -55,13 +78,7 @@ export function HomeLayout() {
         );
     }
 
-    if(user?.firstEmailProcessing || user?.firstEmailProcessingStarted) {
-        return (
-            <DashboardLayout pageTitle="Home" subHeading="Welcome to JobTrackr">
-                <IsMainSyncing />
-            </DashboardLayout>
-        );
-    }
+
 
     // Empty State
     if (isDataEmpty) {

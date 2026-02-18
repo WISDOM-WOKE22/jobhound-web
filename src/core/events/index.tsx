@@ -3,14 +3,16 @@ import { io, Socket } from "socket.io-client";
 import { toast } from "sonner";
 import { useMainStore } from "@/lib/zustand/store";
 import { useLogoutService } from "@/hooks/auth/logout";
+import { UserType } from "@/types";
+import { useSettingsServices } from "@/modules/settings/services";
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL;
 
 export function SocketEvents() {
-  const { user, setUser } = useMainStore();
+  const { user } = useMainStore();
   const { logout } = useLogoutService();
   const socketRef = useRef<Socket | null>(null);
-
+  const { getMyProfile } = useSettingsServices();
   // API/store typically use _id; support both for compatibility
   const userId = user?._id ?? user?.id;
 
@@ -41,6 +43,7 @@ export function SocketEvents() {
     socketRef.current = socket;
 
     socket.emit("join", `user:${userId}`);
+    console.log("joined room", `user:${userId}`);
 
     const onUserBlocked = () => {
       toast.error("Your account has been blocked");
@@ -53,12 +56,15 @@ export function SocketEvents() {
 
     const onJobSearchStarted = () => {
       toast.success("Job search started");
+      window.location.reload();
+      getMyProfile();
     };
 
-    const onJobSearchCompleted = (payload: { data?: { user?: unknown } }) => {
+    const onJobSearchCompleted = (payload: { data?: { user?: { _doc: UserType } } }) => {
       toast.success("Job search completed");
       console.log({payload})
-      if (payload?.data?.user != null) setUser(payload.data.user as Parameters<typeof setUser>[0]);
+      window.location.reload();
+      getMyProfile();
     };
 
     socket.on("userBlocked", onUserBlocked);
